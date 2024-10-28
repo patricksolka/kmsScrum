@@ -3,18 +3,20 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
+    <title>Bootstrap To-Do List</title>
     <link href="./node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>Title</title>
+    <script src="script.js" defer></script>
 </head>
 <body>
-<div id="myDIV" class="header m-2">
+<div id="todo-app" class="header m-2">
     <h2>My To Do List</h2>
-    <label for="myInput"></label><input type="text" id="myInput" placeholder="Title..." class="input-group-sm">
-    <button onclick="newElement()" class="btn btn-secondary addBtn">Add</button>
+    <form id="todo-form">
+        <input type="text" id="todo-input" placeholder="Add a new task..." class="input-group-sm">
+        <button type="submit" class="btn btn-sm btn-secondary addBtn">Add</button>
+    </form>
 </div>
 
-<ul id="ToDoListe">
+<ul id="ToDoListe" class="list-group m-2">
 </ul>
 <script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </body>
