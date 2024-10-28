@@ -1,52 +1,28 @@
-<script>
-    // Function to add a new task
-    function newElement() {
-        let name = document.getElementById("myInput").value;
-        let beschreibung = "Sample description"; // Add a description if needed
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap To-Do List</title>
+    <link href="./node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="script.js" defer></script>
+</head>
+<body>
+<div id="todo-app" class="header m-2 text-center">
+    <h2 class="text-center">My To Do List</h2>
+    <form id="todo-form">
+        <label for="todo-input"></label><input type="text" id="todo-input"
+                                               placeholder="Add a new task..."
+                                               class="input-group-sm">
+        <label for="todo-desc"></label><input type="text" id="todo-desc"
+                                              placeholder="Description..."
+                                              class="input-group-sm">
+        <button type="submit" class="btn btn-sm btn-secondary addBtn">Add</button>
+    </form>
+</div>
 
-        if (name === "") {
-            alert("Please enter a task name!");
-            return;
-        }
-
-        // Send new task to the backend
-        fetch('http://localhost:3000/api/aufgabe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, beschreibung: beschreibung })
-        })
-            .then(response => response.json())
-            .then(task => {
-                // Display the task in the list
-                addTaskToDOM(task);
-                document.getElementById("myInput").value = ""; // Clear input field
-            });
-    }
-
-    // Function to add tasks to the DOM
-    function addTaskToDOM(task) {
-        let li = document.createElement("li");
-        li.className = "list-group-item";
-        li.appendChild(document.createTextNode(task.name + " - " + task.beschreibung));
-
-        // Add delete button to each task
-        let span = document.createElement("span");
-        span.innerHTML = "&times;";
-        span.className = "close btn btn-danger btn-sm float-end";
-        span.onclick = function() {
-            this.parentElement.remove();
-        };
-        li.appendChild(span);
-
-        document.getElementById("ToDoListe").appendChild(li);
-    }
-
-    // Fetch tasks on page load
-    window.onload = function() {
-        fetch('http://localhost:3000/api/aufgaben')
-            .then(response => response.json())
-            .then(tasks => {
-                tasks.forEach(addTaskToDOM);
-            });
-    };
-</script>
+<ul id="ToDoListe" class="list-group m-2">
+</ul>
+<script src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
