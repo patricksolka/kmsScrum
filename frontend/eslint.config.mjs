@@ -3,7 +3,8 @@ import nextPlugin from '@next/eslint-plugin-next';
 import reactPlugin from 'eslint-plugin-react';
 import hooksPlugin from 'eslint-plugin-react-hooks';
 import pluginJs from "@eslint/js";
-import tslint from "typescript-eslint";
+import tslint from "@typescript-eslint/eslint-plugin"; // Ensure the plugin is properly imported
+import parser from '@typescript-eslint/parser'; // Explicitly set parser for TypeScript
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
@@ -11,6 +12,7 @@ export default [
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     languageOptions: {
       globals: globals.browser,
+      parser: parser,  // Explicitly specify the parser
     },
     plugins: {
       react: reactPlugin,
