@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function Home() {
   const [tasks, setTasks] = useState<{ task: string; description: string }[]>(
@@ -17,7 +17,8 @@ export default function Home() {
     event.preventDefault();
 
     if (taskInput === '') {
-      alert('Bitte geben sSie eine Aufgabe ein!');
+      // eslint-disable-next-line no-undef
+      alert('Bitte geben Sie eine Aufgabe ein!');
       return;
     }
 
@@ -38,6 +39,7 @@ export default function Home() {
 
   const handleSaveEdit = () => {
     if (editTaskInput === '') {
+      // eslint-disable-next-line no-undef
       alert('Bitte geben Sie eine Aufgabe ein!');
       return;
     }
