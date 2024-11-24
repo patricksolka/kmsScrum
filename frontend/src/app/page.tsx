@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 export default function Home() {
-  const [tasks, setTasks] = useState<{ task: string; description: string }[]>(
+  const [tasks, setTasks] = useState<{ task: string; description: string; isPrioritized?: boolean  }[]>(
     []
   );
   const [taskInput, setTaskInput] = useState('');
@@ -85,6 +85,16 @@ export default function Home() {
     setTasks(updatedTasks);
   };
 
+  // Toggles the priority status of a task
+  const handleTogglePriority = (index: number) => {
+    const updatedTasks = [...tasks];
+    updatedTasks[index] = {
+      ...updatedTasks[index],
+      isPrioritized: !updatedTasks[index].isPrioritized,
+    };
+    setTasks(updatedTasks);
+  };
+
   return (
     <>
       <div
@@ -134,7 +144,7 @@ export default function Home() {
                 </button>
                 <button
                     onClick={() => handleMoveDown(index)}
-                    className="text-white font-bold py-1 px-3 rounded bg-blue-700 hover:bg-gray-800"
+                    className="text-white font-bold py-1 px-3 rounded bg-purple-700 hover:bg-gray-800"
                     aria-label="Move down"
                 >
                   ▼
@@ -152,8 +162,19 @@ export default function Home() {
 
               <div className="ml-4 flex space-x-2">
                 <button
+                    onClick={() => handleTogglePriority(index)}
+                    aria-label={`Toggle priority for ${task.task}`}
+                    className={`text-2xl ${
+                        task.isPrioritized ? 'text-yellow-500' : 'text-gray-500'
+                    } hover:text-yellow-500`}
+                    style={{background: 'none', border: 'none', outline: 'none'}}
+                >
+                  ★
+                </button>
+
+                <button
                     onClick={() => handleEdit(index)}
-                    className="bg-yellow-500 hover:bg-gray-800 text-white font-bold py-1 px-3 rounded"
+                    className="bg-blue-500 hover:bg-gray-800 text-white font-bold py-1 px-3 rounded"
                 >
                   Edit
                 </button>
