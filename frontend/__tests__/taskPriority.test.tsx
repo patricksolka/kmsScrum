@@ -1,5 +1,7 @@
 import Home from '../src/app/page';
 import {fireEvent, screen, render} from "@testing-library/react";
+import '@testing-library/jest-dom';
+
 
 // Test case: Should mark a task as prioritized when the "Priority" button is clicked
 test('should mark task as prioritized when star button is clicked', () => {
@@ -20,11 +22,13 @@ test('should mark task as prioritized when star button is clicked', () => {
     fireEvent.change(descInput, { target: { value: 'Description 2' } });
     fireEvent.click(addButton);
 
-    // Prioritize task using the "Priority" button
-    const starButton = screen.getByLabelText('Toggle priority');
-    fireEvent.click(starButton);
+    // Prioritize the first task using the appropriate "Priority" button
+    const starButtons = screen.getAllByLabelText(/Toggle priority for/i);
+    fireEvent.click(starButtons[0]); // Click the "Priority" button for Task 1
 
-    // Verify if the first task is marked as prioritized
-    const task = screen.getByText('Task 1');
-    expect(task.parentElement).toHaveClass('bg-yellow-300');
+    // Verify if the first task is marked as prioritized (check the button's class)
+    expect(starButtons[0]).toHaveClass('text-yellow-500');
+
+    // Verify if the second task is NOT marked as prioritized (check the button's class)
+    expect(starButtons[1]).toHaveClass('text-gray-500');
 });
