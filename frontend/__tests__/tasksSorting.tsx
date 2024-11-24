@@ -21,8 +21,8 @@ test('should move task up when up button is clicked', () => {
     fireEvent.click(addButton);
 
     // Move the second task up in the list
-    const moveUpButton = screen.getAllByText('Up')[1];
-    fireEvent.click(moveUpButton);
+    const moveUpButtons = screen.getAllByLabelText('Move up');
+    fireEvent.click(moveUpButtons[1]);
 
     // Verify if the tasks have been swapped
     const tasks = screen.getAllByRole('listitem');
