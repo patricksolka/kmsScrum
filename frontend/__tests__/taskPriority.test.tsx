@@ -31,4 +31,10 @@ test('should mark task as prioritized when star button is clicked', () => {
 
     // Verify if the second task is NOT marked as prioritized (check the button's class)
     expect(starButtons[1]).toHaveClass('text-gray-500');
+
+    // Click the star button again to remove the priority
+    fireEvent.click(starButtons[0]); // Un-prioritize Task 1
+
+    // Verify if the first task is no longer prioritized (check the button's class)
+    expect(starButtons[0]).toHaveClass('text-gray-500');
 });
