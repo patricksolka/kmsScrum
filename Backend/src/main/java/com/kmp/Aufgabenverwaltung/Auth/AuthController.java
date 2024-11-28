@@ -1,6 +1,5 @@
 package com.kmp.Aufgabenverwaltung.Auth;
 
-import com.kmp.Aufgabenverwaltung.DatabaseUtil.Database;
 import com.kmp.Aufgabenverwaltung.User.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,19 +21,19 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService customUserDetailsService;
-    private final Database database;
+    private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtUtil jwtUtil,
             CustomUserDetailsService customUserDetailsService,
-            Database database
+            UserRepository userRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.customUserDetailsService = customUserDetailsService;
-        this.database = database;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/login")
@@ -48,7 +47,7 @@ public class AuthController {
             //------------------------------DONT TOUCH END----------------------------------------------
 
             if (userDetails.getPassword().equals(loginReq.getPassword())) {
-                User user = database.getUserByEmail(loginReq.getEmail());
+                User user = userRepository.findUserByEmail(loginReq.getEmail());
                 String token = jwtUtil.createToken(user);
 
                 return ResponseEntity.ok(new LoginResponseDTO(
@@ -70,7 +69,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody RegisterRequestDTO registerReq) {
-        if (database.checkUserExists(registerReq.getEmail())) {
+        if (userRepository.existsByEmail(registerReq.getEmail())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already exists");
         }
         try {
@@ -81,9 +80,10 @@ public class AuthController {
                     registerReq.getLastName()
             );
 
-            if (database.saveUser(user)) {
+            try{
+                userRepository.save(user);
                 return ResponseEntity.ok(new RegisterResponseDTO(true, "account created"));
-            } else {
+            } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("could not create account");
             }
         } catch (Exception e) {
