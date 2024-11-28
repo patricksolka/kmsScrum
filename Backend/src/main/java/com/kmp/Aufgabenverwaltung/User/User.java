@@ -1,20 +1,33 @@
 package com.kmp.Aufgabenverwaltung.User;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.kmp.Aufgabenverwaltung.TodoTask.TodoTask;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "users") //user table already in use for sqlite or something (weiß ich doch nicht)
+
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String email;
+
+    @JsonIgnore
     private String password;
+
     private String firstName;
     private String lastName;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private final List<TodoTask> todoTasks = new ArrayList<>();
 
     public User() {}
 
