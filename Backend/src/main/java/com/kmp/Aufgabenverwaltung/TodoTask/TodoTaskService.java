@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,24 +21,25 @@ public class TodoTaskService {
         this.userRepository = userRepository;
     }
 
-
     public TodoTaskDTO createTask(String email, TodoTaskDTO todoTaskDTO) {
         User user = userRepository.findUserByEmail(email);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+
         TodoTask todoTask = convertToEntity(todoTaskDTO);
         todoTask.setUser(user);
         TodoTask savedTask = todoTaskRepository.save(todoTask);
         return convertToDto(savedTask);
     }
 
-
     public List<TodoTaskDTO> getTasksByUser(String email) {
-        User user = userRepository.findUserByEmail(email); // Benutzer abrufen
-        return todoTaskRepository.findByUserId(user.getId())
+        User user = userRepository.findUserByEmail(email);
+        return findTasksForUser(user.getId())
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-
 
     public TodoTaskDTO updateTask(String email, Long taskId, TodoTaskDTO updatedTodoTaskDTO) {
         User user = userRepository.findUserByEmail(email);
@@ -54,6 +56,21 @@ public class TodoTaskService {
         return convertToDto(savedTask);
     }
 
+    public void updateTaskOrder(String email, List<TodoTaskDTO> updatedTasks) {
+        User user = userRepository.findUserByEmail(email);
+        List<TodoTask> tasks = findTasksForUser(user.getId());
+
+        Map<Long, Integer> taskOrderMap = updatedTasks.stream()
+                .collect(Collectors.toMap(TodoTaskDTO::getId, TodoTaskDTO::getOrder));
+
+        tasks.forEach(task -> {
+            if (taskOrderMap.containsKey(task.getId())) {
+                task.setTaskOrder(taskOrderMap.get(task.getId()));
+            }
+        });
+
+        todoTaskRepository.saveAll(tasks);
+    }
 
     public void deleteTask(String email, Long taskId) {
         User user = userRepository.findUserByEmail(email);
@@ -66,30 +83,32 @@ public class TodoTaskService {
         todoTaskRepository.deleteById(taskId);
     }
 
+    private List<TodoTask> findTasksForUser(Long userId) {
+        return todoTaskRepository.findByUserId(userId);
+    }
 
     public TodoTask getTaskById(Long taskId) {
         return todoTaskRepository.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Task not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Task with ID " + taskId + " not found"));
     }
 
-
-    // Hilfsmethode: Konvertiert eine TodoTask-Entität in ein DTO
     private TodoTaskDTO convertToDto(TodoTask task) {
         return new TodoTaskDTO(
                 task.getId(),
                 task.getTitle(),
                 task.getDescription(),
-                task.isCompleted()
+                task.isCompleted(),
+                task.getTaskOrder()
         );
     }
 
-
-    // Hilfsmethode: Konvertiert ein DTO in eine TodoTask-Entität
     private TodoTask convertToEntity(TodoTaskDTO dto) {
-        TodoTask task = new TodoTask();
-        task.setTitle(dto.getTitle());
-        task.setDescription(dto.getDescription());
-        task.setCompleted(dto.isCompleted());
-        return task;
+        return new TodoTask(
+                dto.getTitle(),
+                dto.getDescription(),
+                dto.isCompleted(),
+                dto.getOrder()
+        );
     }
 }
+
