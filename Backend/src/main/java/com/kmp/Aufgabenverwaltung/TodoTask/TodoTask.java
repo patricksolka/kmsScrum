@@ -16,6 +16,21 @@ public class TodoTask {
 
     private boolean completed;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    private Integer taskOrder;
+
+    public TodoTask(String title, String description, boolean completed, Integer taskOrder) {
+        this.title = title;
+        this.description = description;
+        this.completed = completed;
+        this.taskOrder = taskOrder;
+    }
+
+    public TodoTask() {}
+
     public Long getId() {
         return id;
     }
@@ -56,7 +71,7 @@ public class TodoTask {
         this.user = user;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    public Integer getTaskOrder() { return taskOrder; }
+
+    public void setTaskOrder(Integer taskOrder) { this.taskOrder = taskOrder; }
 }

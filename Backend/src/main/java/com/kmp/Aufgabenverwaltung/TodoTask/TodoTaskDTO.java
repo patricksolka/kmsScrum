@@ -5,12 +5,14 @@ public class TodoTaskDTO {
     private String title;
     private String description;
     private boolean completed;
+    private Integer order;
 
-    public TodoTaskDTO(Long id, String title, String description, boolean completed) {
+    public TodoTaskDTO(Long id, String title, String description, boolean completed, Integer order) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.completed = completed;
+        this.order = order;
     }
 
     public Long getId() {
@@ -44,4 +46,8 @@ public class TodoTaskDTO {
     public void setCompleted(boolean completed) {
         this.completed = completed;
     }
+
+    public Integer getOrder() { return order; }
+
+    public void setOrder(Integer order) { this.order = order; }
 }
