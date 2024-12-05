@@ -16,11 +16,43 @@
 # This specific template is located at:
 # https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Getting-Started.gitlab-ci.yml
 
-stages:          # List of stages for jobs, and their order of execution
+stages:
+  - build-backend
+  - test-backend
   - build
   - test
   - deploy
 
+# Backend bitte nur mit absprache verändern!!!
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  key: maven-repo
+  paths:
+    - .m2/repository
+
+build-backend:
+  stage: build-backend
+  script:
+    - mkdir -p .m2/repository
+    - cd Backend
+    - mvn clean compile
+  tags:
+    - maven
+    - openjdk21
+
+test-backend:
+  stage: test-backend
+  script:
+    - cd Backend
+    - mvn test
+  tags:
+    - maven
+    - openjdk21
+
+
+# Hier starten die Frontend pipelines
 build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
@@ -55,3 +87,6 @@ deploy-job:      # This job runs in the deploy stage.
     - echo "Application successfully deployed."
   tags:
       - nodejs
+
+
+
