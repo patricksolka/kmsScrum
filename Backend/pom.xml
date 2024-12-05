@@ -66,6 +66,10 @@
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
 
 		<!-- JUnit 5 for testing -->
 		<dependency>
