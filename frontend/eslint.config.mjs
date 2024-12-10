@@ -3,8 +3,8 @@ import nextPlugin from '@next/eslint-plugin-next';
 import reactPlugin from 'eslint-plugin-react';
 import hooksPlugin from 'eslint-plugin-react-hooks';
 import pluginJs from "@eslint/js";
-import tslint from "@typescript-eslint/eslint-plugin"; // Ensure the plugin is properly imported
-import parser from '@typescript-eslint/parser'; // Explicitly set parser for TypeScript
+import tslint from "@typescript-eslint/eslint-plugin";
+import parser from '@typescript-eslint/parser';
 import jest from 'eslint-plugin-jest';
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
@@ -12,15 +12,22 @@ export default [
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
     languageOptions: {
-      globals: globals.browser, ...jest.environments.globals,
-      parser: parser,  // Explicitly specify the parser
+      parser: parser,
+      globals: {
+        ...globals.browser, // Browser-spezifische globale Variablen wie `window`
+        describe: "readonly",
+        test: "readonly",
+        expect: "readonly",
+        afterEach: "readonly",
+        beforeEach: "readonly",
+      },
     },
     plugins: {
       react: reactPlugin,
       'react-hooks': hooksPlugin,
       '@next/next': nextPlugin,
       '@typescript-eslint': tslint,
-      'jest': jest
+      jest: jest,
     },
     rules: {
       ...pluginJs.configs.recommended.rules,
@@ -37,7 +44,7 @@ export default [
           "code": 120,
           "ignoreUrls": true,
           "ignoreStrings": true,
-          "ignoreTemplateLiterals": true
+          "ignoreTemplateLiterals": true,
         }
       ],
       "semi": ["error", "always"],
@@ -46,7 +53,7 @@ export default [
       "no-console": ["warn", { "allow": ["warn", "error"] }],
       "arrow-body-style": ["warn", "as-needed"],
 
-      // Jest specific rules (optional)
+      // Jest-spezifische Regeln
       "jest/no-disabled-tests": "warn",
       "jest/no-focused-tests": "error",
       "jest/no-identical-title": "error",
