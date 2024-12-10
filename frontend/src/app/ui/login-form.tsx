@@ -81,7 +81,7 @@ function LoginForm() {
         const data = await response.json();
         console.log('Login successful, token:', data.token); // Logge die Erfolgsmeldung
         localStorage.setItem('authToken', data.token);
-        /* window.location.href = '/';*/
+        window.location.href = '/';
       } else {
         const errorData = await response.json();
         console.log('Error data:', errorData); // Logge die Fehlermeldung
