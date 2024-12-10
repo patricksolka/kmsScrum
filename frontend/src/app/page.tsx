@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function Home() {
   const [tasks, setTasks] = useState<
-    { task: string; description: string; isPrioritized?: boolean }[]
+    { id: string; task: string; description: string; isPrioritized?: boolean }[]
   >([]);
   const [taskInput, setTaskInput] = useState('');
   const [descInput, setDescInput] = useState('');
@@ -12,8 +12,33 @@ export default function Home() {
   const [editTaskInput, setEditTaskInput] = useState('');
   const [editDescInput, setEditDescInput] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Fetching data from API
+  useEffect(() => {
+    const token = localStorage.getItem('authToken'); // Passe dies an deine Authentifizierungsmethode an
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/tasks', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch tasks: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setTasks(data);
+      } catch (error) {
+        console.error(error);
+        alert('Es gab ein Problem beim Abrufen der Aufgaben.');
+      }
+    };
+    fetchData();
+  }, []);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (taskInput === '') {
@@ -22,12 +47,33 @@ export default function Home() {
     }
 
     const newTask = { task: taskInput, description: descInput };
-    setTasks((prevTasks) => [...prevTasks, newTask]);
 
-    setTaskInput('');
-    setDescInput('');
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:8080/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(newTask)
+      });
+
+      if (response.ok) {
+        const addedTask = await response.json();
+        setTasks((prevTasks) => [...prevTasks, addedTask]);
+        setTaskInput('');
+        setDescInput('');
+      } else {
+        console.error(
+          'Fehler beim Hinzufügen der Aufgabe:',
+          response.statusText
+        );
+      }
+    } catch (error) {
+      console.error('Fehler beim Hinzufügen der Aufgabe:', error);
+    }
   };
-
   const handleEdit = (index: number) => {
     const taskToEdit = tasks[index];
     setEditingIndex(index);
@@ -36,7 +82,7 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  /*const handleSaveEdit = () => {
     if (editTaskInput === '') {
       alert('Bitte geben Sie eine Aufgabe ein!');
       return;
@@ -53,11 +99,54 @@ export default function Home() {
     setEditTaskInput('');
     setEditDescInput('');
     setIsModalOpen(false);
-  };
+  };*/
+  const handleSaveEdit = () => {
+    if (editTaskInput === '') {
+      alert('Bitte geben Sie eine Aufgabe ein!');
+      return;
+    }
 
-  const handleDelete = (index: number) => {
-    const updatedTasks = tasks.filter((_, taskIndex) => taskIndex !== index);
+    const updatedTasks = [...tasks];
+    updatedTasks[editingIndex!] = {
+      ...updatedTasks[editingIndex!],
+      task: editTaskInput,
+      description: editDescInput
+    };
     setTasks(updatedTasks);
+
+    setEditingIndex(null);
+    setEditTaskInput('');
+    setEditDescInput('');
+    setIsModalOpen(false);
+  };
+  const handleDelete = async (index: number) => {
+    const taskToDelete = tasks[index]; // Hole die Aufgabe, die gelöscht werden soll
+
+    // Sende die DELETE-Anfrage an das Backend, dabei wird die ID dynamisch in die URL eingefügt
+    const token = localStorage.getItem('authToken');
+    try {
+      const response = await fetch(
+        `http://localhost:8080/tasks/${taskToDelete.id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Fehler beim Löschen der Aufgabe');
+      }
+
+      // Wenn das Löschen auf dem Server erfolgreich war, entferne die Aufgabe aus dem Zustand
+      const updatedTasks = tasks.filter((_, taskIndex) => taskIndex !== index);
+      setTasks(updatedTasks); // Aktualisiere den Zustand
+    } catch (error) {
+      console.error('Fehler beim Löschen der Aufgabe:', error);
+      alert('Es gab ein Problem beim Löschen der Aufgabe.');
+    }
   };
 
   const handleCloseModal = () => {
@@ -67,9 +156,8 @@ export default function Home() {
     setEditDescInput('');
   };
 
-  // Moves the task up by one position if it's not the first task
   const handleMoveUp = (index: number) => {
-    if (index === 0) return; // Cannot move the first task up
+    if (index === 0) return;
     const updatedTasks = [...tasks];
     [updatedTasks[index - 1], updatedTasks[index]] = [
       updatedTasks[index],
@@ -78,9 +166,8 @@ export default function Home() {
     setTasks(updatedTasks);
   };
 
-  // Moves the task down by one position if it's not the last task
   const handleMoveDown = (index: number) => {
-    if (index === tasks.length - 1) return; // Cannot move the last task down
+    if (index === tasks.length - 1) return;
     const updatedTasks = [...tasks];
     [updatedTasks[index], updatedTasks[index + 1]] = [
       updatedTasks[index + 1],
@@ -89,7 +176,6 @@ export default function Home() {
     setTasks(updatedTasks);
   };
 
-  // Toggles the priority status of a task
   const handleTogglePriority = (index: number) => {
     const updatedTasks = [...tasks];
     updatedTasks[index] = {
