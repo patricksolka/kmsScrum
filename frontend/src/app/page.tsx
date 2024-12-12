@@ -2,27 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { redirect } from 'next/navigation';
+import { Task } from '@/app/types/tasks';
 
 export default function Home() {
-  const [tasks, setTasks] = useState<
-    {
-      id: string;
-      title: string;
-      description: string;
-      completed: boolean;
-      order: number;
-      isPrioritized?: boolean;
-    }[]
-  >([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [taskInput, setTaskInput] = useState('');
   const [descInput, setDescInput] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editTaskInput, setEditTaskInput] = useState('');
   const [editDescInput, setEditDescInput] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Fetching data from API
   useEffect(() => {
-    const token = localStorage.getItem('authToken'); // Passe dies an deine Authentifizierungsmethode an
+    const token = localStorage.getItem('authToken');
     if (!token) {
       // Falls kein Token vorhanden, weiterleiten zur Login-Seite
       redirect('/login');
@@ -41,9 +34,9 @@ export default function Home() {
         if (!response.ok) {
           throw new Error(`Failed to fetch tasks: ${response.statusText}`);
         }
-        const data = await response.json();
-        console.log(data);
-        setTasks(data);
+        const data: Task[] = await response.json();
+        const sortedData = data.sort((a, b) => a.order - b.order);
+        setTasks(sortedData);
       } catch (error) {
         console.error(error);
         alert('Es gab ein Problem beim Abrufen der Aufgaben.');
@@ -52,44 +45,6 @@ export default function Home() {
     fetchData();
   }, []);
 
-  /*const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    if (taskInput === '') {
-      alert('Bitte geben Sie eine Aufgabe ein!');
-      return;
-    }
-
-    const newTask = { title: taskInput, description: descInput };
-    console.log('NewTask:', newTask);
-
-    try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch('http://localhost:8080/tasks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify(newTask)
-      });
-
-      if (response.ok) {
-        const addedTask = await response.json();
-        console.log('Hinzufügte Aufgabe:', addedTask);
-        setTasks((prevTasks) => [...prevTasks, addedTask]);
-        setTaskInput(''); // Zurücksetzen des Task-Inputs
-        setDescInput(''); // Zurücksetzen des Description-Inputs
-      } else {
-        console.error(
-          'Fehler beim Hinzufügen der Aufgabe:',
-          response.statusText
-        );
-      }
-    } catch (error) {
-      console.error('Fehler beim Hinzufügen der Aufgabe:', error);
-    }
-  };*/
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -97,19 +52,15 @@ export default function Home() {
       alert('Bitte geben Sie eine Aufgabe ein!');
       return;
     }
-
-    // Berechne den neuen order-Wert (der kleinste Wert minus 1)
     const newOrder =
       tasks.length > 0 ? Math.max(...tasks.map((task) => task.order)) + 1 : 1;
 
-    // Erstelle das neue Task-Objekt mit title, description, order und completed
     const newTask = {
       title: taskInput,
       description: descInput,
       order: newOrder,
       completed: false
     };
-    console.log('NewTask:', newTask);
 
     try {
       const token = localStorage.getItem('authToken');
@@ -124,12 +75,9 @@ export default function Home() {
 
       if (response.ok) {
         const addedTask = await response.json();
-        console.log('Hinzufügte Aufgabe:', addedTask);
 
-        // Füge die neue Aufgabe zum Zustand hinzu
+        // Aufgabe zum State hinzufügen
         setTasks((prevTasks) => [...prevTasks, addedTask]);
-
-        // Zurücksetzen der Eingabefelder
         setTaskInput('');
         setDescInput('');
       } else {
@@ -151,24 +99,6 @@ export default function Home() {
     setIsModalOpen(true);
   };
 
-  /*const handleSaveEdit = () => {
-    if (editTaskInput === '') {
-      alert('Bitte geben Sie eine Aufgabe ein!');
-      return;
-    }
-
-    const updatedTasks = [...tasks];
-    updatedTasks[editingIndex!] = {
-      task: editTaskInput,
-      description: editDescInput
-    };
-    setTasks(updatedTasks);
-
-    setEditingIndex(null);
-    setEditTaskInput('');
-    setEditDescInput('');
-    setIsModalOpen(false);
-  };*/
   const handleSaveEdit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (editTaskInput === '') {
@@ -183,22 +113,19 @@ export default function Home() {
       description: editDescInput
     };
     try {
-      const taskToUpdate = updatedTasks[editingIndex!];
+      const id = updatedTasks[editingIndex!];
       const token = localStorage.getItem('authToken');
-      const response = await fetch(
-        `http://localhost:8080/tasks/${taskToUpdate.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            title: editTaskInput,
-            description: editDescInput
-          })
-        }
-      );
+      const response = await fetch(`http://localhost:8080/tasks/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: editTaskInput,
+          description: editDescInput
+        })
+      });
       if (!response.ok) {
         throw new Error('Fehler beim Speichern der Aufgabe');
       }
@@ -211,20 +138,18 @@ export default function Home() {
       alert('Fehler beim Speichern: ' + error);
     }
   };
+
   const handleDelete = async (index: number) => {
-    const taskToDelete = tasks[index];
+    const id = tasks[index];
     const token = localStorage.getItem('authToken');
     try {
-      const response = await fetch(
-        `http://localhost:8080/tasks/${taskToDelete.id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          }
+      const response = await fetch(`http://localhost:8080/tasks/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
         }
-      );
+      });
 
       if (!response.ok) {
         throw new Error('Fehler beim Löschen der Aufgabe');
@@ -244,24 +169,58 @@ export default function Home() {
     setEditDescInput('');
   };
 
-  const handleMoveUp = (index: number) => {
+  const updateTaskOrder = async (updatedTasks: Task[]) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:8080/tasks/reorder', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(
+          updatedTasks.map((task: Task) => ({
+            id: task.id,
+            order: task.order
+          }))
+        )
+      });
+      if (!response.ok) {
+        throw new Error('Fehler beim Aktualisieren der Reihenfolge');
+      }
+    } catch (error) {
+      alert('Fehler beim Speichern der Reihenfolge: ' + error);
+    }
+  };
+
+  const handleMoveUp = async (index: number) => {
     if (index === 0) return;
-    const updatedTasks = [...tasks];
+
+    const updatedTasks: Task[] = [...tasks];
     [updatedTasks[index - 1], updatedTasks[index]] = [
       updatedTasks[index],
       updatedTasks[index - 1]
     ];
+    updatedTasks.forEach((task, idx) => {
+      task.order = idx + 1;
+    });
     setTasks(updatedTasks);
+    await updateTaskOrder(updatedTasks);
   };
 
-  const handleMoveDown = (index: number) => {
+  const handleMoveDown = async (index: number) => {
     if (index === tasks.length - 1) return;
-    const updatedTasks = [...tasks];
+
+    const updatedTasks: Task[] = [...tasks];
     [updatedTasks[index], updatedTasks[index + 1]] = [
       updatedTasks[index + 1],
       updatedTasks[index]
     ];
+    updatedTasks.forEach((task, idx) => {
+      task.order = idx + 1;
+    });
     setTasks(updatedTasks);
+    await updateTaskOrder(updatedTasks);
   };
 
   const handleTogglePriority = (index: number) => {
