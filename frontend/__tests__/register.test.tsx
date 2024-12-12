@@ -1,9 +1,8 @@
 import '@testing-library/jest-dom';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import Register from '../src/app/register/page';
 import { useRouter } from 'next/navigation';
 import { mockFetch } from './helper/mockFetch';
-import { act } from 'react';
 
 // Mock für 'next/navigation' Modul
 jest.mock('next/navigation', () => ({
@@ -48,26 +47,21 @@ describe('Register Page', () => {
     render(<Register />);
 
     // Formular ausfüllen
-    act(() => {
-      (screen.getByPlaceholderText(/Vorname/i) as HTMLInputElement).value =
-        'Max';
-      (screen.getByPlaceholderText(/Nachname/i) as HTMLInputElement).value =
-        'Mustermann';
-      (screen.getByPlaceholderText(/Benutzername/i) as HTMLInputElement).value =
-        'max123';
-      (screen.getByPlaceholderText(/E-Mail/i) as HTMLInputElement).value =
-        'max@mustermann.de';
-      (screen.getByPlaceholderText('Passwort') as HTMLInputElement).value =
-        'Passwort123';
-      (
-        screen.getByPlaceholderText('Passwort bestätigen') as HTMLInputElement
-      ).value = 'Passwort123';
-    });
+    (screen.getByPlaceholderText(/Vorname/i) as HTMLInputElement).value = 'Max';
+    (screen.getByPlaceholderText(/Nachname/i) as HTMLInputElement).value =
+      'Mustermann';
+    (screen.getByPlaceholderText(/Benutzername/i) as HTMLInputElement).value =
+      'max123';
+    (screen.getByPlaceholderText(/E-Mail/i) as HTMLInputElement).value =
+      'max@mustermann.de';
+    (screen.getByPlaceholderText('Passwort') as HTMLInputElement).value =
+      'Passwort123';
+    (
+      screen.getByPlaceholderText('Passwort bestätigen') as HTMLInputElement
+    ).value = 'Passwort123';
 
     // Absenden des Formulars simulieren
-    act(() => {
-      screen.getByRole('button', { name: /Registrieren/i }).click();
-    });
+    fireEvent.click(screen.getByRole('button', { name: /Registrieren/i }));
 
     // Warten auf async und sicherstellen, dass der Router-Push abgeschlossen ist
     await waitFor(() => {
