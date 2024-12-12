@@ -20,6 +20,7 @@ export default [
         expect: "readonly",
         afterEach: "readonly",
         beforeEach: "readonly",
+        it: "readonly"
       },
     },
     plugins: {
