@@ -169,7 +169,8 @@ export default function Home() {
     setEditDescInput('');
     setIsModalOpen(false);
   };*/
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (editTaskInput === '') {
       alert('Bitte geben Sie eine Aufgabe ein!');
       return;
@@ -181,17 +182,37 @@ export default function Home() {
       title: editTaskInput,
       description: editDescInput
     };
-    setTasks(updatedTasks);
-
-    setEditingIndex(null);
-    setEditTaskInput('');
-    setEditDescInput('');
-    setIsModalOpen(false);
+    try {
+      const taskToUpdate = updatedTasks[editingIndex!];
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(
+        `http://localhost:8080/tasks/${taskToUpdate.id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            title: editTaskInput,
+            description: editDescInput
+          })
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Fehler beim Speichern der Aufgabe');
+      }
+      setTasks(updatedTasks);
+      setEditingIndex(null);
+      setEditTaskInput('');
+      setEditDescInput('');
+      setIsModalOpen(false);
+    } catch (error) {
+      alert('Fehler beim Speichern: ' + error);
+    }
   };
   const handleDelete = async (index: number) => {
-    const taskToDelete = tasks[index]; // Hole die Aufgabe, die gelöscht werden soll
-
-    // Sende die DELETE-Anfrage an das Backend, dabei wird die ID dynamisch in die URL eingefügt
+    const taskToDelete = tasks[index];
     const token = localStorage.getItem('authToken');
     try {
       const response = await fetch(
@@ -208,10 +229,8 @@ export default function Home() {
       if (!response.ok) {
         throw new Error('Fehler beim Löschen der Aufgabe');
       }
-
-      // Wenn das Löschen auf dem Server erfolgreich war, entferne die Aufgabe aus dem Zustand
       const updatedTasks = tasks.filter((_, taskIndex) => taskIndex !== index);
-      setTasks(updatedTasks); // Aktualisiere den Zustand
+      setTasks(updatedTasks);
     } catch (error) {
       console.error('Fehler beim Löschen der Aufgabe:', error);
       alert('Es gab ein Problem beim Löschen der Aufgabe.');
@@ -352,12 +371,7 @@ export default function Home() {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h3 className="text-2xl font-bold mb-4">Edit Task</h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSaveEdit();
-              }}
-            >
+            <form onSubmit={handleSaveEdit}>
               <input
                 type="text"
                 value={editTaskInput}
