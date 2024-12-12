@@ -5,7 +5,12 @@ import { redirect } from 'next/navigation';
 
 export default function Home() {
   const [tasks, setTasks] = useState<
-    { id: string; task: string; description: string; isPrioritized?: boolean }[]
+    {
+      id: string;
+      title: string;
+      description: string;
+      isPrioritized?: boolean;
+    }[]
   >([]);
   const [taskInput, setTaskInput] = useState('');
   const [descInput, setDescInput] = useState('');
@@ -53,7 +58,8 @@ export default function Home() {
       return;
     }
 
-    const newTask = { task: taskInput, description: descInput };
+    const newTask = { title: taskInput, description: descInput };
+    console.log('NewTask:', newTask);
 
     try {
       const token = localStorage.getItem('authToken');
@@ -86,7 +92,7 @@ export default function Home() {
   const handleEdit = (index: number) => {
     const taskToEdit = tasks[index];
     setEditingIndex(index);
-    setEditTaskInput(taskToEdit.task);
+    setEditTaskInput(taskToEdit.title);
     setEditDescInput(taskToEdit.description);
     setIsModalOpen(true);
   };
@@ -118,7 +124,7 @@ export default function Home() {
     const updatedTasks = [...tasks];
     updatedTasks[editingIndex!] = {
       ...updatedTasks[editingIndex!],
-      task: editTaskInput,
+      title: editTaskInput,
       description: editDescInput
     };
     setTasks(updatedTasks);
@@ -252,7 +258,7 @@ export default function Home() {
 
             <div className="flex-1 ml-4">
               <strong className="block text-lg font-semibold">
-                {task.task}
+                {task.title}
               </strong>
               <small className="block text-sm text-gray-500">
                 {task.description}
@@ -262,7 +268,7 @@ export default function Home() {
             <div className="ml-4 flex space-x-2">
               <button
                 onClick={() => handleTogglePriority(index)}
-                aria-label={`Toggle priority for ${task.task}`}
+                aria-label={`Toggle priority for ${task.title}`}
                 className={`text-2xl ${
                   task.isPrioritized ? 'text-yellow-500' : 'text-gray-500'
                 } hover:text-yellow-500`}
