@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
   const [tasks, setTasks] = useState<
@@ -15,6 +16,11 @@ export default function Home() {
   // Fetching data from API
   useEffect(() => {
     const token = localStorage.getItem('authToken'); // Passe dies an deine Authentifizierungsmethode an
+    if (!token) {
+      // Falls kein Token vorhanden, weiterleiten zur Login-Seite
+      redirect('/login');
+      return;
+    }
     const fetchData = async () => {
       try {
         const response = await fetch('http://localhost:8080/tasks', {
@@ -29,6 +35,7 @@ export default function Home() {
           throw new Error(`Failed to fetch tasks: ${response.statusText}`);
         }
         const data = await response.json();
+        console.log(data);
         setTasks(data);
       } catch (error) {
         console.error(error);
@@ -61,9 +68,10 @@ export default function Home() {
 
       if (response.ok) {
         const addedTask = await response.json();
+        console.log('Hinzufügte Aufgabe:', addedTask);
         setTasks((prevTasks) => [...prevTasks, addedTask]);
-        setTaskInput('');
-        setDescInput('');
+        setTaskInput(''); // Zurücksetzen des Task-Inputs
+        setDescInput(''); // Zurücksetzen des Description-Inputs
       } else {
         console.error(
           'Fehler beim Hinzufügen der Aufgabe:',
@@ -74,6 +82,7 @@ export default function Home() {
       console.error('Fehler beim Hinzufügen der Aufgabe:', error);
     }
   };
+
   const handleEdit = (index: number) => {
     const taskToEdit = tasks[index];
     setEditingIndex(index);
