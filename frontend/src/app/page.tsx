@@ -9,6 +9,8 @@ export default function Home() {
       id: string;
       title: string;
       description: string;
+      completed: boolean;
+      order: number;
       isPrioritized?: boolean;
     }[]
   >([]);
@@ -50,7 +52,7 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  /*const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (taskInput === '') {
@@ -78,6 +80,58 @@ export default function Home() {
         setTasks((prevTasks) => [...prevTasks, addedTask]);
         setTaskInput(''); // Zurücksetzen des Task-Inputs
         setDescInput(''); // Zurücksetzen des Description-Inputs
+      } else {
+        console.error(
+          'Fehler beim Hinzufügen der Aufgabe:',
+          response.statusText
+        );
+      }
+    } catch (error) {
+      console.error('Fehler beim Hinzufügen der Aufgabe:', error);
+    }
+  };*/
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (taskInput === '') {
+      alert('Bitte geben Sie eine Aufgabe ein!');
+      return;
+    }
+
+    // Berechne den neuen order-Wert (der kleinste Wert minus 1)
+    const newOrder =
+      tasks.length > 0 ? Math.max(...tasks.map((task) => task.order)) + 1 : 1;
+
+    // Erstelle das neue Task-Objekt mit title, description, order und completed
+    const newTask = {
+      title: taskInput,
+      description: descInput,
+      order: newOrder,
+      completed: false
+    };
+    console.log('NewTask:', newTask);
+
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await fetch('http://localhost:8080/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(newTask)
+      });
+
+      if (response.ok) {
+        const addedTask = await response.json();
+        console.log('Hinzufügte Aufgabe:', addedTask);
+
+        // Füge die neue Aufgabe zum Zustand hinzu
+        setTasks((prevTasks) => [...prevTasks, addedTask]);
+
+        // Zurücksetzen der Eingabefelder
+        setTaskInput('');
+        setDescInput('');
       } else {
         console.error(
           'Fehler beim Hinzufügen der Aufgabe:',
