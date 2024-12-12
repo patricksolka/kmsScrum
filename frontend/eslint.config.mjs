@@ -49,7 +49,7 @@ export default [
       ],
       "semi": ["error", "always"],
       "no-trailing-spaces": ["error"],
-      "no-multiple-empty-lines": ["error", { "max": 1 }],
+      "no-multiple-empty-lines": ["error", { "max": 2 }],
       "no-console": ["warn", { "allow": ["warn", "error"] }],
       "arrow-body-style": ["warn", "as-needed"],
 
